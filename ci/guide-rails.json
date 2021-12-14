@@ -119,6 +119,7 @@
 					"update_watch_time": "5000-30000",
 					"serial": false
 				},
+				"application_init": {},
 				"instance_tags": [
 					{
 						"name": "application.name",
@@ -145,8 +146,8 @@
 				],
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "c29b5819-2d06-4c04-552f-cac50c6689d9",
-						"docker_registry_alias_id": "c2b3c4bd-4236-4f6b-4b8b-b7746e054600",
+						"tool_config_alias_id": "6c0bcd86-4bc8-45b2-4be3-9f8d2043adac",
+						"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1",
 						"name": "((application.name))",
 						"cluster_name": "",
 						"namespace": "((application.name))-((application.branch))",
@@ -250,109 +251,6 @@
 							"alb.ingress.kubernetes.io/ssl-redirect": "443"
 						},
 						"deploy_application": true
-					},
-					{
-						"tool_config_alias_id": "4bf92c32-0ed5-4f89-4e6c-5049f8de205a",
-						"docker_registry_alias_id": "c2b3c4bd-4236-4f6b-4b8b-b7746e054600",
-						"name": "((application.name))-west",
-						"cluster_name": "",
-						"namespace": "((application.name))-((application.branch))",
-						"replicas": 1,
-						"containers": [
-							{
-								"name": "((application.name))",
-								"image": "guide-rails/exp-go-k8s:((application.version))",
-								"ports": [
-									{
-										"name": "endpoint1",
-										"hostPort": 3000,
-										"containerPort": 3000,
-										"protocol": "TCP"
-									}
-								],
-								"resources": {},
-								"imagePullPolicy": "Always",
-								"securityContext": {
-									"privileged": true
-								}
-							}
-						],
-						"autoscaling": {
-							"metadata": {
-								"creationTimestamp": null
-							},
-							"spec": {
-								"scaleTargetRef": {
-									"kind": "",
-									"name": ""
-								},
-								"minReplicas": 3,
-								"maxReplicas": 4,
-								"metrics": [
-									{
-										"type": "Resource",
-										"resource": {
-											"name": "cpu",
-											"target": {
-												"type": "AverageValue",
-												"averageValue": "70"
-											}
-										}
-									},
-									{
-										"type": "Resource",
-										"resource": {
-											"name": "memory",
-											"target": {
-												"type": "AverageValue",
-												"averageValue": "40"
-											}
-										}
-									}
-								]
-							},
-							"status": {
-								"currentReplicas": 0,
-								"desiredReplicas": 0,
-								"currentMetrics": null,
-								"conditions": null
-							}
-						},
-						"ingress_enabled": true,
-						"ingress": {
-							"metadata": {
-								"creationTimestamp": null
-							},
-							"spec": {
-								"rules": [
-									{
-										"host": "((application.name))-((segment.name))-((application.branch))-west.guide-rails.io",
-										"http": {
-											"paths": [
-												{
-													"path": "/",
-													"backend": {
-														"servicePort": "80"
-													}
-												}
-											]
-										}
-									}
-								]
-							},
-							"status": {
-								"loadBalancer": {}
-							}
-						},
-						"load_balancing_type": 2,
-						"dns_hosted_zone": "guide-rails.io",
-						"service_name": "((application.name))-((application.shortsha))",
-						"alb_ingress_controller_annotations": {
-							"alb.ingress.kubernetes.io/healthcheck-path": "/",
-							"alb.ingress.kubernetes.io/healthcheck-port": "traffic-port",
-							"alb.ingress.kubernetes.io/scheme": "internal"
-						},
-						"deploy_application": true
 					}
 				],
 				"deployment_target": 2
@@ -383,6 +281,7 @@
 					"update_watch_time": "5000-30000",
 					"serial": false
 				},
+				"application_init": {},
 				"instance_tags": [
 					{
 						"name": "application.name",
@@ -405,8 +304,8 @@
 				],
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "c29b5819-2d06-4c04-552f-cac50c6689d9",
-						"docker_registry_alias_id": "c2b3c4bd-4236-4f6b-4b8b-b7746e054600",
+						"tool_config_alias_id": "6c0bcd86-4bc8-45b2-4be3-9f8d2043adac",
+						"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1",
 						"name": "((application.name))",
 						"cluster_name": "",
 						"namespace": "((application.name))-((application.branch))",
@@ -531,6 +430,7 @@
 					"update_watch_time": "5000-30000",
 					"serial": false
 				},
+				"application_init": {},
 				"instance_tags": [
 					{
 						"name": "application.name",
@@ -543,8 +443,8 @@
 				},
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "c29b5819-2d06-4c04-552f-cac50c6689d9",
-						"docker_registry_alias_id": "f5aeaf85-5985-472c-43d3-6752af7385a4",
+						"tool_config_alias_id": "6c0bcd86-4bc8-45b2-4be3-9f8d2043adac",
+						"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1",
 						"name": "((application.name))",
 						"cluster_name": "",
 						"namespace": "((application.name))",
