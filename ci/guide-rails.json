@@ -29,6 +29,7 @@
 				"name": "Build",
 				"segment_type": "build",
 				"publish_attributes": {
+					"publish": true,
 					"docker_images": [
 						{
 							"repository": "github/exp-go-k8s",
@@ -36,7 +37,7 @@
 								"((application.version))",
 								"latest"
 							],
-							"docker_registry_alias_id": "d77256d4-0784-4b44-7a74-400b5d1d7ba7"
+							"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1"
 						}
 					]
 				},
