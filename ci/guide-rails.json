@@ -3,10 +3,24 @@
 		"version": 2
 	},
 	"application": {
-		"name": "go-k8s",
+		"name": "exp-go-k8s",
 		"language": "GOLANG",
 		"artifact_store": {
-			"repositories": null
+			"type": "s3",
+			"repositories": [
+				{
+					"category": "rc-packaging",
+					"bucket": "guide-rails-calculi-rc"
+				},
+				{
+					"category": "final-packaging",
+					"bucket": "guide-rails-calculi-final"
+				},
+				{
+					"category": "logs",
+					"bucket": "guide-rails-calculi-logs"
+				}
+			]
 		}
 	},
 	"pipeline": {
@@ -16,25 +30,26 @@
 				"segment_type": "build",
 				"publish_attributes": {
 					"publish": true,
-					"docker_attributes": {
-						"repository": "go-k8s",
-						"tags": [
-							"((application.version))",
-							"latest"
-						],
-						"path": ""
-					}
+					"docker_images": [
+						{
+							"repository": "github/exp-go-k8s",
+							"tags": [
+								"((application.version))",
+								"latest"
+							],
+							"docker_registry_alias_id": "d77256d4-0784-4b44-7a74-400b5d1d7ba7"
+						}
+					]
 				},
 				"exit_actions": {},
 				"properties": [
 					{
 						"name": "gopath",
-						"description": "GOPATH is set to ${SEGMENT_BASE_DIR}/cache/go by default, when caching is enabled. Caches are maintained on the worker where your build gets allocated. For a new worker assigned to the build, the cache will be re-created",
-						"value": "${SEGMENT_BASE_DIR}/cache/go"
+						"value": "${SEGMENT_BASE_DIR}/cache/go",
+						"description": "GOPATH is set to ${SEGMENT_BASE_DIR}/cache/go by default, when caching is enabled. Caches are maintained on the worker where your build gets allocated. For a new worker assigned to the build, the cache will be re-created"
 					}
 				],
 				"deployment_strategy": {},
-				"application_init": {},
 				"instance_tags": [
 					{
 						"name": "application.name",
@@ -42,18 +57,7 @@
 					}
 				],
 				"post_deployment_actions": {
-					"instances": null,
-					"loadbalanced": false,
-					"loadbalancer": {
-						"TargetGroupName": "",
-						"TargetGroupPort": 0,
-						"TargetGroupProtocol": "",
-						"TargetType": "",
-						"VPCID": "",
-						"HealthCheckEnabled": false,
-						"HealthCheckPort": "",
-						"UnhealthyThresholdCount": 0
-					}
+					"loadbalancer": {}
 				},
 				"cache_info": {
 					"paths": [
@@ -67,7 +71,7 @@
 							{
 								"name": "Get Dependencies",
 								"definition": "Get Dependencies",
-								"command": "go get -t -d ./...",
+								"command": "go get -t -d ./... \n",
 								"properties": null
 							},
 							{
@@ -99,14 +103,6 @@
 				"run_after": [
 					"Build"
 				],
-				"job_steps": [
-					{
-						"name": "Env",
-						"definition": "Env",
-						"command": "env",
-						"properties": null
-					}
-				],
 				"exit_actions": {},
 				"properties": [
 					{
@@ -122,7 +118,6 @@
 					"update_watch_time": "5000-30000",
 					"serial": false
 				},
-				"application_init": {},
 				"instance_tags": [
 					{
 						"name": "application.name",
@@ -130,36 +125,145 @@
 					}
 				],
 				"post_deployment_actions": {
-					"instances": null,
-					"loadbalanced": false,
-					"loadbalancer": {
-						"TargetGroupName": "",
-						"TargetGroupPort": 0,
-						"TargetGroupProtocol": "",
-						"TargetType": "",
-						"VPCID": "",
-						"HealthCheckEnabled": false,
-						"HealthCheckPort": "",
-						"UnhealthyThresholdCount": 0
-					}
-				},
-				"docker_options": {
-					"repository": "kubedeploy"
+					"loadbalancer": {}
 				},
 				"source_code_available": true,
+				"tasks": [
+					{
+						"name": "exp-go-k8s",
+						"steps": [
+							{
+								"name": "Env",
+								"definition": "Env",
+								"command": "env\n\nfunction dnsCheck() {\n    appURL=$1\n    statusCode=$(curl -s -L -o /dev/null -w \"%{http_code}\" ${appURL} || true)\n\n    count=40\n    while [ $count -ge 0 ]; do \n        if [ $statusCode -ne 200 ]; then \n            echo \"Waiting for DNS record to be available...\"\n            sleep 10\n            count=$(expr $count - 1)\n            statusCode=$(curl -L -s -o /dev/null -w \"%{http_code}\" ${appURL} || true)\n            echo \"Received status code: ${statusCode} from ${appURL}\"\n        else \n             break\n         fi\n    done\n\n    if [ $statusCode -ne 200 ]; then\n         echo \"Failed to connect to application on DNS...\"\n         exit 1\n    fi\n}\n\necho \"Testing the east DNS\"\ndnsCheck \"http://((application.name))-((segment.name))-((application.branch)).guide-rails.io\"\n\necho \"Testing the west DNS\"\ndnsCheck \"http://((application.name))-((segment.name))-((application.branch))-west.guide-rails.io\"",
+								"properties": null
+							}
+						],
+						"docker_options": {}
+					}
+				],
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "be3ae31e-51a7-4d2b-41ad-a3c3d9d8773b",
+						"tool_config_alias_id": "c29b5819-2d06-4c04-552f-cac50c6689d9",
+						"docker_registry_alias_id": "c2b3c4bd-4236-4f6b-4b8b-b7746e054600",
 						"name": "((application.name))",
 						"cluster_name": "",
-						"namespace": "((application.name))-((application.shortsha))",
+						"namespace": "((application.name))-((application.branch))",
+						"replicas": 2,
+						"containers": [
+							{
+								"name": "((application.name))",
+								"image": "guide-rails/exp-go-k8s:((application.version))",
+								"ports": [
+									{
+										"name": "endpoint2",
+										"hostPort": 3000,
+										"containerPort": 3000,
+										"protocol": "TCP"
+									}
+								],
+								"resources": {},
+								"imagePullPolicy": "Always",
+								"securityContext": {
+									"privileged": true
+								}
+							}
+						],
+						"autoscaling": {
+							"metadata": {
+								"creationTimestamp": null
+							},
+							"spec": {
+								"scaleTargetRef": {
+									"kind": "",
+									"name": ""
+								},
+								"minReplicas": 2,
+								"maxReplicas": 2,
+								"metrics": [
+									{
+										"type": "Resource",
+										"resource": {
+											"name": "cpu",
+											"target": {
+												"type": "AverageValue",
+												"averageValue": "70"
+											}
+										}
+									},
+									{
+										"type": "Resource",
+										"resource": {
+											"name": "memory",
+											"target": {
+												"type": "AverageValue",
+												"averageValue": "40"
+											}
+										}
+									}
+								]
+							},
+							"status": {
+								"currentReplicas": 0,
+								"desiredReplicas": 0,
+								"currentMetrics": null,
+								"conditions": null
+							}
+						},
+						"ingress_enabled": true,
+						"ingress": {
+							"metadata": {
+								"creationTimestamp": null
+							},
+							"spec": {
+								"rules": [
+									{
+										"host": "((application.name))-((segment.name))-((application.branch)).guide-rails.io",
+										"http": {
+											"paths": [
+												{
+													"path": "/",
+													"backend": {
+														"servicePort": "80"
+													}
+												}
+											]
+										}
+									}
+								]
+							},
+							"status": {
+								"loadBalancer": {}
+							}
+						},
+						"load_balancing_type": 2,
+						"dns_hosted_zone": "guide-rails.io",
+						"dns_zone_type": "public",
+						"service_name": "((application.name))-((application.shortsha))",
+						"alb_ingress_controller_annotations": {
+							"alb.ingress.kubernetes.io/certificate-arn": "arn:aws:iam::818130157321:server-certificate/guide-rails-wildcard-20220726",
+							"alb.ingress.kubernetes.io/healthcheck-path": "/",
+							"alb.ingress.kubernetes.io/healthcheck-port": "traffic-port",
+							"alb.ingress.kubernetes.io/listen-ports": "[{\"HTTP\": 80}, {\"HTTPS\":443}]",
+							"alb.ingress.kubernetes.io/scheme": "internal",
+							"alb.ingress.kubernetes.io/ssl-redirect": "443"
+						},
+						"deploy_application": true
+					},
+					{
+						"tool_config_alias_id": "4bf92c32-0ed5-4f89-4e6c-5049f8de205a",
+						"docker_registry_alias_id": "c2b3c4bd-4236-4f6b-4b8b-b7746e054600",
+						"name": "((application.name))-west",
+						"cluster_name": "",
+						"namespace": "((application.name))-((application.branch))",
 						"replicas": 1,
 						"containers": [
 							{
 								"name": "((application.name))",
-								"image": "((gr.dockerregistry.repo_url))/go-k8s:((application.version))",
+								"image": "guide-rails/exp-go-k8s:((application.version))",
 								"ports": [
 									{
+										"name": "endpoint1",
 										"hostPort": 3000,
 										"containerPort": 3000,
 										"protocol": "TCP"
@@ -213,6 +317,7 @@
 								"conditions": null
 							}
 						},
+						"ingress_enabled": true,
 						"ingress": {
 							"metadata": {
 								"creationTimestamp": null
@@ -220,7 +325,7 @@
 							"spec": {
 								"rules": [
 									{
-										"host": "((application.name)).calculi.io",
+										"host": "((application.name))-((segment.name))-((application.branch))-west.guide-rails.io",
 										"http": {
 											"paths": [
 												{
@@ -238,13 +343,173 @@
 								"loadBalancer": {}
 							}
 						},
-						"dns_hosted_zone": "calculi.io",
+						"load_balancing_type": 2,
+						"dns_hosted_zone": "guide-rails.io",
 						"service_name": "((application.name))-((application.shortsha))",
 						"alb_ingress_controller_annotations": {
 							"alb.ingress.kubernetes.io/healthcheck-path": "/",
 							"alb.ingress.kubernetes.io/healthcheck-port": "traffic-port",
-							"alb.ingress.kubernetes.io/scheme": "internet-facing"
-						}
+							"alb.ingress.kubernetes.io/scheme": "internal"
+						},
+						"deploy_application": true
+					}
+				],
+				"deployment_target": 2
+			},
+			{
+				"name": "Isolation",
+				"segment_type": "isolation",
+				"run_after": [
+					"Build"
+				],
+				"exit_actions": {},
+				"properties": [
+					{
+						"name": "POSTGRES_PASSWORD",
+						"value": "password",
+						"type": "string"
+					},
+					{
+						"name": "PGDATA",
+						"value": "/data/pgdata",
+						"type": "string"
+					}
+				],
+				"deployment_strategy": {
+					"canaries": 1,
+					"max_in_flight": 1,
+					"canary_watch_time": "5000-30000",
+					"update_watch_time": "5000-30000",
+					"serial": false
+				},
+				"instance_tags": [
+					{
+						"name": "application.name",
+						"value": "((application.name))"
+					}
+				],
+				"tasks": [
+					{
+						"name": "HC",
+						"steps": [
+							{
+								"name": "Verify connection",
+								"definition": "Verify connection",
+								"command": "env\n\nfunction connectionCheck() {\n    host=$1\n    port=$2\n    statusCode=$(nc -zv ${host} ${port} || true)\n\n    count=40\n    while [ $count -ge 0 ]; do \n        if [ $statusCode -ne 0 ]; then \n            echo \"Waiting for connectivity to be available...\"\n            sleep 10\n            count=$(expr $count - 1)\n            statusCode=$(nc -zv ${host} ${port} || true)\n            echo \"No connection yet to host ${host} on port ${port}\"\n        else \n             break\n         fi\n    done\n\n    if [ $statusCode -ne 0 ]; then\n         echo \"Failed to connect to application on port...\"\n         exit 1\n    fi\n}\n\n",
+								"properties": null
+							}
+						],
+						"docker_options": {}
+					}
+				],
+				"k8s_instance_groups": [
+					{
+						"tool_config_alias_id": "c29b5819-2d06-4c04-552f-cac50c6689d9",
+						"docker_registry_alias_id": "c2b3c4bd-4236-4f6b-4b8b-b7746e054600",
+						"name": "((application.name))",
+						"cluster_name": "",
+						"namespace": "((application.name))-((application.branch))",
+						"replicas": 1,
+						"containers": [
+							{
+								"name": "((application.name))",
+								"image": "dockerhub-proxy/library/postgres:latest",
+								"ports": [
+									{
+										"name": "db",
+										"hostPort": 5432,
+										"containerPort": 5432,
+										"protocol": "TCP"
+									}
+								],
+								"resources": {},
+								"imagePullPolicy": "IfNotPresent",
+								"securityContext": {
+									"privileged": false
+								}
+							}
+						],
+						"autoscaling": {
+							"metadata": {
+								"creationTimestamp": null
+							},
+							"spec": {
+								"scaleTargetRef": {
+									"kind": "",
+									"name": ""
+								},
+								"minReplicas": 3,
+								"maxReplicas": 4,
+								"metrics": [
+									{
+										"type": "Resource",
+										"resource": {
+											"name": "cpu",
+											"target": {
+												"type": "AverageValue",
+												"averageValue": "70"
+											}
+										}
+									},
+									{
+										"type": "Resource",
+										"resource": {
+											"name": "memory",
+											"target": {
+												"type": "AverageValue",
+												"averageValue": "40"
+											}
+										}
+									}
+								]
+							},
+							"status": {
+								"currentReplicas": 0,
+								"desiredReplicas": 0,
+								"currentMetrics": null,
+								"conditions": null
+							}
+						},
+						"ingress_enabled": true,
+						"ingress": {
+							"metadata": {
+								"creationTimestamp": null
+							},
+							"spec": {
+								"rules": [
+									{
+										"host": "((application.name))-((segment.name))-((application.branch)).guide-rails.io"
+									}
+								]
+							},
+							"status": {
+								"loadBalancer": {}
+							}
+						},
+						"load_balancing_type": 1,
+						"dns_zone_type": "public",
+						"service_name": "((application.name))-((application.shortsha))",
+						"alb_ingress_controller_annotations": {
+							"service.beta.kubernetes.io/aws-load-balancer-nlb-target-type": "ip"
+						},
+						"volumes": [
+							{
+								"persistent": true,
+								"size": "1Gi",
+								"mount_path": "/data",
+								"attributes": {
+									"ReadWriteOnce": "true"
+								}
+							}
+						],
+						"type": "StatefulSet",
+						"stateful_set_spec": {
+							"replicas": 2,
+							"pod_management_policy": 1,
+							"update_strategy": 1,
+							"headless_service": true
+						},
+						"deploy_application": true
 					}
 				],
 				"deployment_target": 2
@@ -254,7 +519,8 @@
 				"segment_type": "production",
 				"persistent": true,
 				"run_after": [
-					"Integration"
+					"Integration",
+					"Isolation"
 				],
 				"exit_actions": {},
 				"deployment_strategy": {
@@ -264,7 +530,6 @@
 					"update_watch_time": "5000-30000",
 					"serial": false
 				},
-				"application_init": {},
 				"instance_tags": [
 					{
 						"name": "application.name",
@@ -273,22 +538,12 @@
 				],
 				"gated": true,
 				"post_deployment_actions": {
-					"instances": null,
-					"loadbalanced": false,
-					"loadbalancer": {
-						"TargetGroupName": "",
-						"TargetGroupPort": 0,
-						"TargetGroupProtocol": "",
-						"TargetType": "",
-						"VPCID": "",
-						"HealthCheckEnabled": false,
-						"HealthCheckPort": "",
-						"UnhealthyThresholdCount": 0
-					}
+					"loadbalancer": {}
 				},
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "be3ae31e-51a7-4d2b-41ad-a3c3d9d8773b",
+						"tool_config_alias_id": "c29b5819-2d06-4c04-552f-cac50c6689d9",
+						"docker_registry_alias_id": "f5aeaf85-5985-472c-43d3-6752af7385a4",
 						"name": "((application.name))",
 						"cluster_name": "",
 						"namespace": "((application.name))",
@@ -296,9 +551,10 @@
 						"containers": [
 							{
 								"name": "((application.name))",
-								"image": "((gr.dockerregistry.repo_url))/go-k8s:((application.version))",
+								"image": "guide-rails/exp-go-k8s:((application.version))",
 								"ports": [
 									{
+										"name": "endpoint-1",
 										"hostPort": 3000,
 										"containerPort": 3000,
 										"protocol": "TCP"
@@ -339,6 +595,7 @@
 								"conditions": null
 							}
 						},
+						"ingress_enabled": true,
 						"ingress": {
 							"metadata": {
 								"creationTimestamp": null
@@ -346,7 +603,7 @@
 							"spec": {
 								"rules": [
 									{
-										"host": "((application.name)).calculi.io",
+										"host": "((application.name)).guide-rails.io",
 										"http": {
 											"paths": [
 												{
@@ -364,13 +621,15 @@
 								"loadBalancer": {}
 							}
 						},
-						"dns_hosted_zone": "calculi.io",
+						"load_balancing_type": 2,
+						"dns_hosted_zone": "guide-rails.io",
 						"service_name": "((application.name))-((application.shortsha))",
 						"alb_ingress_controller_annotations": {
 							"alb.ingress.kubernetes.io/healthcheck-path": "/",
 							"alb.ingress.kubernetes.io/healthcheck-port": "traffic-port",
-							"alb.ingress.kubernetes.io/scheme": "internet-facing"
-						}
+							"alb.ingress.kubernetes.io/scheme": "internal"
+						},
+						"deploy_application": true
 					}
 				],
 				"deployment_target": 2
@@ -391,151 +650,9 @@
 				"type": "string"
 			}
 		],
-		"deployment_files": [],
-		"application_init": {
-			"command": "bin/start-service.sh"
-		},
-		"releases": []
+		"deployment_files": []
 	},
 	"organization": {
-		"orgname": "Tutorial"
-	},
-	"infrastructure": {
-		"stemcells": null,
-		"resources": [
-			{
-				"name": "pipeline",
-				"image": {
-					"name": "docker-registry.service.consul:443/pipeline-image-cli-test",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "email",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-email-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "deployment",
-				"image": {
-					"name": "docker-registry.service.consul:443/pipeline-image-cli-test",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "idgenerator",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-id-generator",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "emitter",
-				"image": {
-					"name": "docker-registry.service.consul:443/guide-rails-emitter",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "git-resource",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-git-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "build-breaker",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-build-breaker",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "s3",
-				"image": {
-					"name": "docker-registry.service.consul:443/concourse-s3-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "slack",
-				"image": {
-					"name": "docker-registry.service.consul:443/concourse-slack-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "sonar",
-				"image": {
-					"name": "docker-registry.service.consul:443/concourse-sonarqube-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "time",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-time-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "azure-blobstore",
-				"image": {
-					"name": "docker-registry.service.consul:443/concourse-azure-blobstore-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "gr-gcs-resource",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-gcs-resource",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "build",
-				"image": {
-					"name": "docker-registry.service.consul:443/pipeline-image-go-tools",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "docker-resource",
-				"image": {
-					"name": "docker-registry.service.consul:443/gr-docker-image",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			},
-			{
-				"name": "eks-tools",
-				"image": {
-					"name": "docker-registry.service.consul:443/pipeline-image-eks-tools-test",
-					"version": "latest",
-					"location": "docker-registry.service.consul:443"
-				}
-			}
-		],
-		"notification_configurations": null,
-		"vault": {},
-		"concourse": {},
-		"mq": {},
-		"bosh": {}
+		"orgname": "calculi-io"
 	}
 }
