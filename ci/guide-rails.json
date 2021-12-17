@@ -155,7 +155,7 @@
 						"containers": [
 							{
 								"name": "((application.name))",
-								"image": "guide-rails/exp-go-k8s:((application.version))",
+								"image": "github/exp-go-k8s:((application.version))",
 								"ports": [
 									{
 										"name": "endpoint2",
@@ -452,7 +452,7 @@
 						"containers": [
 							{
 								"name": "((application.name))",
-								"image": "guide-rails/exp-go-k8s:((application.version))",
+								"image": "github/exp-go-k8s:((application.version))",
 								"ports": [
 									{
 										"name": "endpoint-1",
