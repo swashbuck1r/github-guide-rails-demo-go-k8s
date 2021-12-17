@@ -146,7 +146,7 @@
 				],
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "6c0bcd86-4bc8-45b2-4be3-9f8d2043adac",
+						"tool_config_alias_id": "36c1292d-3351-4889-6912-d9b085795740",
 						"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1",
 						"name": "((application.name))",
 						"cluster_name": "",
@@ -304,7 +304,7 @@
 				],
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "6c0bcd86-4bc8-45b2-4be3-9f8d2043adac",
+						"tool_config_alias_id": "36c1292d-3351-4889-6912-d9b085795740",
 						"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1",
 						"name": "((application.name))",
 						"cluster_name": "",
@@ -443,7 +443,7 @@
 				},
 				"k8s_instance_groups": [
 					{
-						"tool_config_alias_id": "6c0bcd86-4bc8-45b2-4be3-9f8d2043adac",
+						"tool_config_alias_id": "36c1292d-3351-4889-6912-d9b085795740",
 						"docker_registry_alias_id": "b7538d0f-4373-4d39-7300-76e6642699b1",
 						"name": "((application.name))",
 						"cluster_name": "",
