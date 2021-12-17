@@ -220,7 +220,7 @@
 							"spec": {
 								"rules": [
 									{
-										"host": "((application.name))-((segment.name))-((application.branch)).guide-rails.io",
+										"host": "gh-((application.name))-((segment.name))-((application.branch)).guide-rails.io",
 										"http": {
 											"paths": [
 												{
@@ -378,7 +378,7 @@
 							"spec": {
 								"rules": [
 									{
-										"host": "((application.name))-((segment.name))-((application.branch)).guide-rails.io"
+										"host": "gh-((application.name))-((segment.name))-((application.branch)).guide-rails.io"
 									}
 								]
 							},
@@ -504,7 +504,7 @@
 							"spec": {
 								"rules": [
 									{
-										"host": "((application.name)).guide-rails.io",
+										"host": "gh-((application.name)).guide-rails.io",
 										"http": {
 											"paths": [
 												{
