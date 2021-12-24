@@ -25,3 +25,7 @@ func TestHTTPHandler(t *testing.T) {
 	}
 	assert.Equal(t, string(response), "Congratulations! Your Go application has been successfully deployed on Kubernetes.")
 }
+
+func TestDummy(t *testing.T) {
+	assert.Equal(t, "this thing", "Another thing")
+}
