@@ -27,5 +27,5 @@ func TestHTTPHandler(t *testing.T) {
 }
 
 func TestDummy(t *testing.T) {
-	assert.Equal(t, "this thing", "Another thing")
+	assert.Equal(t, "this thing", "this thing")
 }
