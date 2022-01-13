@@ -57,7 +57,7 @@
 							{
 								"name": "Build",
 								"definition": "Build",
-								"command": "echo \"hello world\"",
+								"command": "echo \"hello world\"\ncd app-code\ngo build -o ((application.name))\necho \"ended hello world\"",
 								"properties": null
 							},
 							{
