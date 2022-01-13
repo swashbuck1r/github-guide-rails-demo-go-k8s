@@ -57,7 +57,7 @@
 							{
 								"name": "Build",
 								"definition": "Build",
-								"command": "cd app-code\ngo build -o ((application.name))",
+								"command": "echo \"hello world\"",
 								"properties": null
 							},
 							{
