@@ -1,6 +1,6 @@
 {
 	"metadata": {
-		"version": 1
+		"version": 2
 	},
 	"application": {
 		"name": "github-guide-rails-demo-go-k8s",
@@ -57,7 +57,7 @@
 							{
 								"name": "Build",
 								"definition": "Build",
-								"command": "go build -o ((application.name))",
+								"command": "cd app-code\ngo build -o ((application.name))",
 								"properties": null
 							},
 							{
@@ -77,13 +77,7 @@
 		"deployment_files": [],
 		"application_init": {
 			"command": "bin/start-service.sh"
-		},
-		"releases": [
-			{
-				"name": "consul",
-				"version": "latest"
-			}
-		]
+		}
 	},
 	"organization": {
 		"orgname": "swashbuck1r"
