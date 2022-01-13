@@ -63,7 +63,7 @@
 							{
 								"name": "Build Instrumented",
 								"definition": "Build Instrumented",
-								"command": "go test -c -coverpkg=all -covermode=count -o ((application.name))-instrumented",
+								"command": "cd app-code\ngo test -c -coverpkg=all -covermode=count -o ((application.name))-instrumented",
 								"properties": null
 							}
 						],
