@@ -65,6 +65,12 @@
 								"definition": "Build Instrumented",
 								"command": "cd app-code\ngo test -c -coverpkg=all -covermode=count -o ((application.name))-instrumented",
 								"properties": null
+							},
+							{
+								"name": "Tree",
+								"definition": "Tree",
+								"command": "tree .",
+								"properties": null
 							}
 						],
 						"docker_options": {}
