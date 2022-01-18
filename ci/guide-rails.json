@@ -67,9 +67,9 @@
 								"properties": null
 							},
 							{
-								"name": "Tree",
-								"definition": "Tree",
-								"command": "tree .",
+								"name": "List all files",
+								"definition": "List all files",
+								"command": "ls -LR",
 								"properties": null
 							}
 						],
